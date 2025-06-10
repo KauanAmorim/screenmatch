@@ -22,14 +22,16 @@ public class Principal {
         String nomeSerie = scanner.nextLine();
 
         // Search Serie Data
-        String json = apiConsumer.getData(API_ADDRESS + nomeSerie.replace(" ", "+") + "&apikey=" + API_KEY);
+        String search_url = API_ADDRESS + nomeSerie.replace(" ", "+") + API_KEY;
+        String json = apiConsumer.getData(search_url);
         SeriesData seriesData = dataConverter.convert(json, SeriesData.class);
         System.out.println(seriesData);
 
         // Search Season Data
         List<SeasonData> seasons = new ArrayList<>();
         for (int i = 1; i < seriesData.totalTemporadas(); i++) {
-            json = apiConsumer.getData(API_ADDRESS + nomeSerie.replace(" ", "+") + "$season=" + i + "&apikey=" + API_KEY);
+            String search_url_seasons = API_ADDRESS + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY;
+            json = apiConsumer.getData(search_url_seasons);
             SeasonData season = dataConverter.convert(json, SeasonData.class);
             seasons.add(season);
         }
