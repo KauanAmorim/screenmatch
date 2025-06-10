@@ -11,25 +11,25 @@ public class Episode {
     private double rating;
     private LocalDate releaseDate;
 
-    public Episode(int season, String title, int number, double rating, LocalDate releaseDate) {
+    public Episode(int season, EpisodeData episodeData) {
         this.season = season;
-        this.title = title;
-        this.number = number;
-        this.constructorRating(rating);
-        this.constructorReleaseDate(releaseDate);
+        this.title = episodeData.title();
+        this.number = episodeData.number();
+        this.constructorRating(episodeData.rating());
+        this.constructorReleaseDate(episodeData.releaseDate());
     }
 
-    private void constructorRating(double rating) {
+    private void constructorRating(String rating) {
         try {
-            this.rating = rating;
+            this.rating = Double.valueOf(rating);
         } catch (NumberFormatException e) {
             this.rating = 0;
         }
     }
 
-    private void constructorReleaseDate(LocalDate releaseDate) {
+    private void constructorReleaseDate(String releaseDate) {
         try {
-            this.releaseDate = releaseDate;
+            this.releaseDate = LocalDate.parse(releaseDate);
         } catch (DateTimeParseException e) {
             this.releaseDate = null;
         }
