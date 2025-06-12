@@ -9,10 +9,7 @@ import br.com.kauanamorim.screenmatch.service.DataConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Principal {
@@ -65,20 +62,35 @@ public class Principal {
 
         episodes.forEach(System.out::println);
 
-        System.out.println("Enter the year you want to star searching from");
-        int year = scanner.nextInt();
-        scanner.nextLine();
+//        System.out.println("Enter the year you want to star searching from");
+//        int year = scanner.nextInt();
+//        scanner.nextLine();
+//
+//        LocalDate searchDate = LocalDate.of(year, 1, 1);
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//
+//        episodes.stream()
+//                .filter(e -> e.getReleaseDate() != null)
+//                .filter(e -> e.getReleaseDate().isAfter(searchDate))
+//                .forEach(e -> System.out.println(
+//                        "Season: " + e.getSeason() +
+//                                " Episode: " + e.getTitle() +
+//                                " Release Date: " + e.getReleaseDate().format(formatter)
+//                ));
 
-        LocalDate searchDate = LocalDate.of(year, 1, 1);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        Map<Integer, Double> avaliacoesPorTemporada = episodes.stream()
+                .filter(e -> e.getRating() > 0.0)
+                .collect(Collectors.groupingBy(Episode::getSeason,
+                        Collectors.averagingDouble(Episode::getRating)));
+        System.out.println(avaliacoesPorTemporada);
 
-        episodes.stream()
-                .filter(e -> e.getReleaseDate() != null)
-                .filter(e -> e.getReleaseDate().isAfter(searchDate))
-                .forEach(e -> System.out.println(
-                        "Season: " + e.getSeason() +
-                                " Episode: " + e.getTitle() +
-                                " Release Date: " + e.getReleaseDate().format(formatter)
-                ));
+        DoubleSummaryStatistics estatistic = episodes.stream()
+                .filter(e -> e.getRating() > 0.0)
+                .collect(Collectors.summarizingDouble(Episode::getRating));
+
+        System.out.println("Avarage: " + estatistic.getAverage());
+        System.out.println("Min: " + estatistic.getMin());
+        System.out.println("Max: " + estatistic.getMax());
+        System.out.println("Qtd: " + estatistic.getCount());
     }
 }
