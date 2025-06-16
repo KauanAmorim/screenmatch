@@ -22,62 +22,75 @@ public class Principal {
     private final String API_KEY = "&apikey=bfb95c90";
 
     public void exibeMenu() {
-
-        String menu = """
-                1 - Search series
-                2 - Show episodes
-                
-                0 - Exit program
-                """;
-
-        System.out.println(menu);
-        int option = scanner.nextInt();
-        scanner.nextLine();
-
-        switch (option) {
-            case 1:
-                searchSerie();
-                break;
-
-            case 2:
-                searchEpisodeBySerie();
-                break;
-
-            case 0:
-                System.out.println("Exiting...");
-                break;
-
-            default:
-                System.out.println("Invalid option");
-                break;
-        }
-    }
-
-    private void searchSerie() {
-        SeriesData seriesData = getSeriesData();
-        System.out.println(seriesData);
-    }
-
-    private void searchEpisodeBySerie() {
-        SeriesData seriesData = getSeriesData();
-        List<SeasonData> seasons = new ArrayList<>();
-
-        for (int i = 1; i < seriesData.totalSeasons(); i++) {
-            String search_url_seasons = API_ADDRESS + seriesData.title().replace(" ", "+") + "&season=" + i + API_KEY;
-            String json = apiConsumer.getData(search_url_seasons);
-            SeasonData season = dataConverter.convert(json, SeasonData.class);
-            seasons.add(season);
-        }
-
-        seasons.forEach(System.out::println);
-    }
-
-    private SeriesData getSeriesData() {
         System.out.println("Type a serie name to search");
         String nomeSerie = scanner.nextLine();
 
+        // Search Serie Data
         String search_url = API_ADDRESS + nomeSerie.replace(" ", "+") + API_KEY;
         String json = apiConsumer.getData(search_url);
-        return dataConverter.convert(json, SeriesData.class);
+        SeriesData seriesData = dataConverter.convert(json, SeriesData.class);
+        System.out.println(seriesData);
+
+        // Search Season Data
+        List<SeasonData> seasons = new ArrayList<>();
+        for (int i = 1; i < seriesData.totalSeasons(); i++) {
+            String search_url_seasons = API_ADDRESS + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY;
+            json = apiConsumer.getData(search_url_seasons);
+            SeasonData season = dataConverter.convert(json, SeasonData.class);
+            seasons.add(season);
+        }
+        seasons.forEach(System.out::println);
+
+        seasons.forEach(
+                t -> t.episodes().forEach(
+                        e -> System.out.println(e.title())));
+
+        List<EpisodeData> episodeData = seasons.stream()
+                .flatMap(s -> s.episodes().stream())
+                .collect(Collectors.toList());
+
+        episodeData.stream()
+                .filter(e -> !e.rating().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(EpisodeData::rating).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+        List<Episode> episodes = seasons.stream()
+                .flatMap(s -> s.episodes().stream()
+                        .map(e -> new Episode(s.number(), e)))
+                .collect(Collectors.toList());
+
+        episodes.forEach(System.out::println);
+
+//        System.out.println("Enter the year you want to star searching from");
+//        int year = scanner.nextInt();
+//        scanner.nextLine();
+//
+//        LocalDate searchDate = LocalDate.of(year, 1, 1);
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//
+//        episodes.stream()
+//                .filter(e -> e.getReleaseDate() != null)
+//                .filter(e -> e.getReleaseDate().isAfter(searchDate))
+//                .forEach(e -> System.out.println(
+//                        "Season: " + e.getSeason() +
+//                                " Episode: " + e.getTitle() +
+//                                " Release Date: " + e.getReleaseDate().format(formatter)
+//                ));
+
+        Map<Integer, Double> avaliacoesPorTemporada = episodes.stream()
+                .filter(e -> e.getRating() > 0.0)
+                .collect(Collectors.groupingBy(Episode::getSeason,
+                        Collectors.averagingDouble(Episode::getRating)));
+        System.out.println(avaliacoesPorTemporada);
+
+        DoubleSummaryStatistics estatistic = episodes.stream()
+                .filter(e -> e.getRating() > 0.0)
+                .collect(Collectors.summarizingDouble(Episode::getRating));
+
+        System.out.println("Avarage: " + estatistic.getAverage());
+        System.out.println("Min: " + estatistic.getMin());
+        System.out.println("Max: " + estatistic.getMax());
+        System.out.println("Qtd: " + estatistic.getCount());
     }
 }
