@@ -1,16 +1,11 @@
 package br.com.kauanamorim.screenmatch.principal;
 
-import br.com.kauanamorim.screenmatch.model.Episode;
-import br.com.kauanamorim.screenmatch.model.EpisodeData;
 import br.com.kauanamorim.screenmatch.model.SeasonData;
 import br.com.kauanamorim.screenmatch.model.SeriesData;
 import br.com.kauanamorim.screenmatch.service.ApiConsumer;
 import br.com.kauanamorim.screenmatch.service.DataConverter;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Principal {
 
